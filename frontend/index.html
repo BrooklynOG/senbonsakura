@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Finance Pro - Personal Finance Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#0e1117;color:#e8e6df;min-height:100vh;display:flex}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px}
+#sidebar{width:260px;background:#0b0e14;border-right:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;flex-shrink:0;min-height:100vh;overflow-y:auto}
+#sb-head{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.logo{font-family:'Lora',serif;font-size:17px;color:#f0ede6}.logo span{color:#4ecfa0}
+.nav-sec{font-size:9px;color:#5a5750;text-transform:uppercase;letter-spacing:.08em;padding:10px 14px 4px}
+.nb{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:12px;color:#8a877e;background:none;border:none;width:100%;text-align:left;transition:all .15s}
+.nb:hover{color:#e8e6df;background:rgba(255,255,255,0.04)}.nb.active{color:#4ecfa0;background:rgba(78,207,160,0.08)}
+.nb .ico{font-size:13px;width:16px;text-align:center}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+.panel{display:none;flex-direction:column;flex:1}.panel.active{display:flex}
+#auth-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
+.auth-card{background:#161b24;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:30px;width:350px}
+.auth-card h2{font-family:'Lora',serif;margin-bottom:20px}
+.auth-card input{width:100%;padding:12px;margin-bottom:15px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e8e6df}
+.auth-card button{width:100%;padding:12px;background:#1D9E75;border:none;border-radius:8px;color:#fff;cursor:pointer}
+.auth-card .switch{text-align:center;margin-top:15px;font-size:12px;color:#4ecfa0;cursor:pointer}
+#user-info{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:12px;display:flex;justify-content:space-between;align-items:center}
+#logout-btn{background:none;border:1px solid rgba(255,255,255,0.1);color:#ff6b6b;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px}
+#msgs{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.mw{display:flex;flex-direction:column;gap:3px}.mw.user{align-items:flex-end}.mw.bot{align-items:flex-start}
+.ml{font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:0 3px}
+.bot .ml{color:#4ecfa0}.user .ml{color:#8a877e}
+.msg{max-width:85%;font-size:13px;line-height:1.65;padding:10px 14px;border-radius:13px}
+.bot .msg{background:rgba(255,255,255,0.06);color:#dedad2;border-bottom-left-radius:3px}
+.user .msg{background:#1D9E75;color:#fff;border-bottom-right-radius:3px}
+.msg strong{color:#4ecfa0;font-weight:500}
+.typing{display:flex;align-items:center;gap:4px;padding:10px 13px;background:rgba(255,255,255,0.06);border-radius:13px;border-bottom-left-radius:3px;width:fit-content}
+.typing span{width:6px;height:6px;background:#4ecfa0;border-radius:50%;animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+#ir{display:flex;gap:8px;padding:10px 20px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+#inp{flex:1;font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(255,255,255,0.05);color:#e8e6df;outline:none}
+#send{background:#1D9E75;color:#fff;border:none;border-radius:8px;padding:9px 16px;cursor:pointer}
+.tp{flex:1;overflow-y:auto;padding:20px}
+.card{background:#161b24;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h3{font-size:12px;font-weight:500;color:#4ecfa0;margin-bottom:14px}
+.field{margin-bottom:11px}
+.field label{font-size:10px;color:#8a877e;display:block;margin-bottom:4px}
+.field input,.field select{width:100%;font-family:inherit;font-size:12px;padding:7px 10px;border:1px solid rgba(255,255,255,0.1);border-radius:7px;background:rgba(255,255,255,0.05);color:#e8e6df;outline:none}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.btn{background:#1D9E75;color:#fff;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;width:100%}
+.btn.ghost{background:rgba(29,158,117,0.12);color:#4ecfa0;border:1px solid rgba(78,207,160,0.25)}
+.sb{background:rgba(29,158,117,0.08);border-radius:10px;padding:10px;text-align:center}
+.sb .sl{font-size:9px;color:#8a877e}
+.sb .sv{font-size:15px;font-weight:500;color:#4ecfa0}
+.ai-ins{background:rgba(78,207,160,0.07);border:1px solid rgba(78,207,160,0.2);border-radius:10px;padding:12px;font-size:11px;color:#a8f0d6;margin-top:12px}
+.chip{background:rgba(255,255,255,0.05);color:#c4c1b8;font-size:10px;padding:4px 10px;border-radius:999px;cursor:pointer;border:1px solid rgba(255,255,255,0.1)}
+#chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.ei{display:flex;align-items:center;gap:8px;padding:9px;background:rgba(255,255,255,0.04);border-radius:9px;margin-bottom:7px}
+.en{flex:1}.ename{font-size:12px}.ecat{font-size:10px;color:#8a877e}
+.ea{font-size:13px;font-weight:500}
+.hi{padding:6px 14px;cursor:pointer;font-size:11px;color:#8a877e;display:flex;justify-content:space-between}
+.hi:hover{background:rgba(255,255,255,0.04)}
+#hist-list{margin-top:5px}
+</style>
+</head>
+<body>
+
+<div id="auth-panel">
+  <div class="auth-card">
+    <h2>Finance Pro</h2>
+    <input type="text" id="auth-username" placeholder="Username"/>
+    <input type="email" id="auth-email" placeholder="Email"/>
+    <input type="password" id="auth-password" placeholder="Password"/>
+    <button id="auth-btn">Sign Up</button>
+    <div class="switch" id="auth-switch">Already have an account? Login</div>
+  </div>
+</div>
+
+<div id="app-container" style="display:none;width:100%;display:flex">
+<div id="sidebar">
+  <div id="sb-head"><div class="logo">Finance<span>Pro</span></div></div>
+  <div id="user-info"><span id="username-display"></span><button id="logout-btn">Logout</button></div>
+  <div class="nav-sec">Tools</div>
+  <button class="nb active" onclick="showP('chat')" id="nav-chat"><span class="ico">💬</span>AI Chat</button>
+  <button class="nb" onclick="showP('expense')" id="nav-expense"><span class="ico">💸</span>Expense Tracker</button>
+  <button class="nb" onclick="showP('emi')" id="nav-emi"><span class="ico">🏠</span>EMI Calculator</button>
+  <button class="nb" onclick="showP('sip')" id="nav-sip"><span class="ico">📈</span>SIP Calculator</button>
+  <button class="nb" onclick="showP('goal')" id="nav-goal"><span class="ico">🎯</span>Goal Planner</button>
+  <button class="nb" onclick="showP('glossary')" id="nav-glossary"><span class="ico">📚</span>Finance Glossary</button>
+  <div class="hist-hd" style="padding:10px 14px 4px;font-size:9px;color:#5a5750">Chat History</div>
+  <div id="hist-list"></div>
+</div>
+
+<div id="main">
+  <div class="panel active" id="panel-chat">
+    <div id="ch-head" style="padding:16px 20px 10px">
+      <h2>Personal Finance Helper</h2>
+      <p style="font-size:11px;color:#8a877e">Your AI assistant for savings, investments, loans &amp; taxes</p>
+    </div>
+    <div id="chips">
+      <button class="chip" onclick="ask('What is compound interest?')">Compound interest</button>
+      <button class="chip" onclick="ask('Budget tips for India')">Budget tips</button>
+      <button class="chip" onclick="ask('Best investments for beginners India')">Investments</button>
+      <button class="chip" onclick="ask('50-30-20 rule')">50-30-20 rule</button>
+    </div>
+    <div id="msgs">
+      <div class="mw bot"><div class="ml">Assistant</div><div class="msg">👋 Welcome to Finance Pro! Ask me anything about personal finance in India.</div></div>
+    </div>
+    <div id="ir">
+      <input id="inp" placeholder="Ask any finance question..." onkeydown="if(event.key==='Enter')send()"/>
+      <button id="send" onclick="send()">Send</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-expense"><div class="tp"><h2>Expense Tracker</h2><div id="expense-content"></div></div></div>
+  <div class="panel" id="panel-emi"><div class="tp"><h2>EMI Calculator</h2><div id="emi-content"></div></div></div>
+  <div class="panel" id="panel-sip"><div class="tp"><h2>SIP Calculator</h2><div id="sip-content"></div></div></div>
+  <div class="panel" id="panel-goal"><div class="tp"><h2>Goal Planner</h2><div id="goal-content-page"></div></div></div>
+  <div class="panel" id="panel-glossary"><div class="tp"><h2>Finance Glossary</h2><div id="glossary-content"></div></div></div>
+</div>
+</div>
+
+<script>
+let token = null;
+let currentUserId = null;
+
+// API helper
+async function apiCall(endpoint, method, data) {
+  const response = await fetch(endpoint, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token
+    },
+    body: data ? JSON.stringify(data) : undefined
+  });
+  return response.json();
+}
+
+// Auth functions
+async function register() {
+  const username = document.getElementById('auth-username').value;
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-password').value;
+  
+  const res = await fetch('/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password })
+  });
+  const data = await res.json();
+  if (data.token) {
+    token = data.token;
+    currentUserId = data.user.id;
+    localStorage.setItem('token', token);
+    document.getElementById('username-display').textContent = data.user.username;
+    document.getElementById('auth-panel').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    loadExpenses();
+    loadChats();
+  } else {
+    alert(data.error);
+  }
+}
+
+async function login() {
+  const username = document.getElementById('auth-username').value;
+  const password = document.getElementById('auth-password').value;
+  
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  if (data.token) {
+    token = data.token;
+    currentUserId = data.user.id;
+    localStorage.setItem('token', token);
+    document.getElementById('username-display').textContent = data.user.username;
+    document.getElementById('auth-panel').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    loadExpenses();
+    loadChats();
+  } else {
+    alert(data.error);
+  }
+}
+
+// Chat functions
+async function send() {
+  const inp = document.getElementById('inp');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  
+  addMsg(q, 'user');
+  addTyping();
+  
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+    body: JSON.stringify({ message: q, history: [] })
+  });
+  const data = await res.json();
+  remTyping();
+  addMsg(data.reply || data.error, 'bot');
+}
+
+function addMsg(txt, type) {
+  const msgs = document.getElementById('msgs');
+  const div = document.createElement('div');
+  div.className = 'mw ' + type;
+  div.innerHTML = `<div class="ml">${type === 'bot' ? 'Assistant' : 'You'}</div><div class="msg">${txt.replace(/\n/g, '<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTyping() {
+  const msgs = document.getElementById('msgs');
+  const div = document.createElement('div');
+  div.className = 'mw bot';
+  div.id = 'typing';
+  div.innerHTML = '<div class="ml">Assistant</div><div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function remTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function ask(q) {
+  document.getElementById('inp').value = q;
+  send();
+}
+
+// Expense functions
+async function loadExpenses() {
+  const res = await fetch('/api/expenses', { headers: { 'Authorization': token } });
+  const expenses = await res.json();
+  renderExpenses(expenses);
+}
+
+async function addExpense() {
+  const desc = document.getElementById('exp-desc')?.value;
+  const amt = parseFloat(document.getElementById('exp-amt')?.value);
+  const cat = document.getElementById('exp-cat')?.value;
+  if (!desc || !amt) return;
+  
+  await fetch('/api/expenses', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+    body: JSON.stringify({ description: desc, amount: amt, category: cat })
+  });
+  loadExpenses();
+}
+
+function renderExpenses(expenses) {
+  const container = document.getElementById('expense-content');
+  let total = 0;
+  expenses.forEach(e => total += e.amount);
+  
+  container.innerHTML = `
+    <div class="card"><h3>Add Expense</h3>
+      <div class="g2">
+        <div class="field"><label>Description</label><input type="text" id="exp-desc"/></div>
+        <div class="field"><label>Amount (₹)</label><input type="number" id="exp-amt"/></div>
+        <div class="field"><label>Category</label>
+          <select id="exp-cat"><option>Food</option><option>Transport</option><option>Shopping</option><option>Bills</option><option>Other</option></select>
+        </div>
+      </div>
+      <button class="btn" onclick="addExpense()">+ Add</button>
+    </div>
+    <div class="card"><h3>Summary</h3>
+      <div class="sb"><div class="sl">Total Spent</div><div class="sv">₹${total.toLocaleString()}</div></div>
+    </div>
+    <div class="card"><h3>Transactions</h3>
+      ${expenses.map(e => `<div class="ei"><div class="en"><div class="ename">${e.description}</div><div class="ecat">${e.category} · ${e.date}</div></div><div class="ea">₹${e.amount}</div></div>`).join('')}
+    </div>
+  `;
+}
+
+// Chat history
+async function loadChats() {
+  const res = await fetch('/api/chats', { headers: { 'Authorization': token } });
+  const chats = await res.json();
+  const histDiv = document.getElementById('hist-list');
+  histDiv.innerHTML = chats.map(c => `<div class="hi" onclick="loadChat(${c.id})"><span class="ht">${c.title}</span></div>`).join('');
+}
+
+// Show panel
+function showP(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${id}`).classList.add('active');
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  document.getElementById(`nav-${id}`).classList.add('active');
+  
+  if (id === 'expense') loadExpenses();
+  if (id === 'emi') renderEMI();
+  if (id === 'sip') renderSIP();
+  if (id === 'goal') renderGoal();
+  if (id === 'glossary') renderGlossary();
+}
+
+function renderEMI() {
+  document.getElementById('emi-content').innerHTML = `
+    <div class="card"><h3>Loan Details</h3>
+      <div class="g2">
+        <div class="field"><label>Loan Amount (₹)</label><input type="number" id="emi-amt" value="500000" oninput="calcEMI()"/></div>
+        <div class="field"><label>Interest Rate (%)</label><input type="number" id="emi-rate" value="8.5" oninput="calcEMI()"/></div>
+        <div class="field"><label>Tenure (Months)</label><input type="number" id="emi-ten" value="60" oninput="calcEMI()"/></div>
+      </div>
+    </div>
+    <div class="card"><h3>Results</h3>
+      <div class="g3"><div class="sb"><div class="sl">Monthly EMI</div><div class="sv" id="emi-result">—</div></div></div>
+    </div>
+  `;
+  calcEMI();
+}
+
+function calcEMI() {
+  const P = parseFloat(document.getElementById('emi-amt')?.value) || 0;
+  const r = parseFloat(document.getElementById('emi-rate')?.value) / 12 / 100 || 0;
+  const n = parseInt(document.getElementById('emi-ten')?.value) || 0;
+  if (!P || !r || !n) return;
+  const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+  document.getElementById('emi-result').textContent = '₹' + Math.round(emi).toLocaleString();
+}
+
+function renderSIP() {
+  document.getElementById('sip-content').innerHTML = `
+    <div class="card"><h3>SIP Details</h3>
+      <div class="g2">
+        <div class="field"><label>Monthly (₹)</label><input type="number" id="sip-amt" value="5000" oninput="calcSIP()"/></div>
+        <div class="field"><label>Return (%)</label><input type="number" id="sip-rate" value="12" oninput="calcSIP()"/></div>
+        <div class="field"><label>Years</label><input type="number" id="sip-years" value="10" oninput="calcSIP()"/></div>
+      </div>
+    </div>
+    <div class="card"><h3>Results</h3>
+      <div class="sb"><div class="sl">Maturity Value</div><div class="sv" id="sip-result">—</div></div>
+    </div>
+  `;
+  calcSIP();
+}
+
+function calcSIP() {
+  const m = parseFloat(document.getElementById('sip-amt')?.value) || 0;
+  const r = parseFloat(document.getElementById('sip-rate')?.value) / 12 / 100 || 0;
+  const n = parseInt(document.getElementById('sip-years')?.value) * 12 || 0;
+  if (!m || !r || !n) return;
+  const mat = m * (Math.pow(1 + r, n) - 1) / r * (1 + r);
+  document.getElementById('sip-result').textContent = '₹' + Math.round(mat).toLocaleString();
+}
+
+function renderGoal() {
+  document.getElementById('goal-content-page').innerHTML = `
+    <div class="card"><h3>Your Goal</h3>
+      <div class="field"><label>Goal Name</label><input type="text" id="goal-name" placeholder="Buy a house"/></div>
+      <div class="field"><label>Target Amount (₹)</label><input type="number" id="goal-target"/></div>
+      <div class="field"><label>Current Savings (₹)</label><input type="number" id="goal-current"/></div>
+      <div class="field"><label>Target Date</label><input type="date" id="goal-date"/></div>
+      <button class="btn" onclick="calculateGoal()">Calculate</button>
+    </div>
+    <div id="goal-result"></div>
+  `;
+}
+
+function calculateGoal() {
+  const target = parseFloat(document.getElementById('goal-target')?.value) || 0;
+  const current = parseFloat(document.getElementById('goal-current')?.value) || 0;
+  const date = document.getElementById('goal-date')?.value;
+  if (!date) return;
+  const months = Math.max(1, Math.round((new Date(date) - new Date()) / (1000 * 60 * 60 * 24 * 30)));
+  const needed = Math.max(0, target - current);
+  const monthly = Math.round(needed / months);
+  document.getElementById('goal-result').innerHTML = `<div class="card"><h3>Plan</h3><div class="sb"><div class="sl">Monthly Savings Needed</div><div class="sv">₹${monthly.toLocaleString()}</div></div><div class="sb"><div class="sl">Months Left</div><div class="sv">${months}</div></div></div>`;
+}
+
+function renderGlossary() {
+  document.getElementById('glossary-content').innerHTML = `
+    <div class="card"><h3>Search Term</h3>
+      <div style="display:flex;gap:8px"><input type="text" id="glossary-term" placeholder="Type a term..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#fff;padding:8px"/><button class="btn" style="width:auto" onclick="defineTerm()">Define</button></div>
+    </div>
+    <div id="glossary-result" class="ai-ins" style="display:none"></div>
+  `;
+}
+
+async function defineTerm() {
+  const term = document.getElementById('glossary-term').value;
+  if (!term) return;
+  const res = await fetch('/api/define-term', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+    body: JSON.stringify({ term })
+  });
+  const data = await res.json();
+  const resultDiv = document.getElementById('glossary-result');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = data.definition || data.error;
+}
+
+// Logout
+document.getElementById('logout-btn')?.addEventListener('click', () => {
+  localStorage.removeItem('token');
+  location.reload();
+});
+
+// Auth toggle
+let isLogin = false;
+document.getElementById('auth-switch')?.addEventListener('click', () => {
+  isLogin = !isLogin;
+  const btn = document.getElementById('auth-btn');
+  const switchText = document.getElementById('auth-switch');
+  if (isLogin) {
+    btn.textContent = 'Login';
+    switchText.textContent = "Don't have an account? Sign Up";
+    btn.onclick = login;
+  } else {
+    btn.textContent = 'Sign Up';
+    switchText.textContent = 'Already have an account? Login';
+    btn.onclick = register;
+  }
+});
+document.getElementById('auth-btn').onclick = register;
+
+// Check for existing token
+const savedToken = localStorage.getItem('token');
+if (savedToken) {
+  token = savedToken;
+  document.getElementById('auth-panel').style.display = 'none';
+  document.getElementById('app-container').style.display = 'flex';
+  loadExpenses();
+  loadChats();
+}
+</script>
+</body>
+</html>
